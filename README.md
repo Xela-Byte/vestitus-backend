@@ -1,13 +1,18 @@
 # Vestitus Backend
 
+## About Vestitus
+
+Vestitus is a React Native e-commerce mobile application built with **Expo**, running on **iOS, Android, and Web**. The application uses **TypeScript**, **NativeWind** for styling, and **Zustand** for state management. This backend repository provides the API services to power the Vestitus mobile application.
+
 ## Architecture Overview
 
-This is a **NestJS v11 TypeScript backend** with a modular, decorator-based architecture. The project follows NestJS conventions with modules, controllers, and services for dependency injection and clear separation of concerns.
+This is a **NestJS v11 TypeScript backend** with a modular, decorator-based architecture. The project follows NestJS conventions with modules, controllers, and services for dependency injection and clear separation of concerns. It is designed to serve the Vestitus React Native mobile application across all platforms.
 
 - **Framework**: NestJS 11 with Express
 - **Language**: TypeScript 5.7 (strict mode enabled)
 - **Port**: Default 3000 (configurable via `PORT` env var)
 - **Module structure**: `src/app.module.ts` is the root module that imports controllers and providers
+- **Frontend**: Expo-based React Native app (iOS, Android, Web) with TypeScript, NativeWind, and Zustand
 
 ## Key Development Commands
 
