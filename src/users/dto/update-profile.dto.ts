@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Gender } from '../entities/user.entity';
 
 export class UpdateProfileDto {
   @ApiProperty({
@@ -19,4 +26,32 @@ export class UpdateProfileDto {
   @IsEmail()
   @IsOptional()
   email?: string;
+
+  @ApiProperty({
+    example: '1990-01-15',
+    description: 'Date of birth (YYYY-MM-DD format)',
+    required: false,
+  })
+  @IsDateString()
+  @IsOptional()
+  dateOfBirth?: Date;
+
+  @ApiProperty({
+    example: 'male',
+    description: 'Gender',
+    enum: Gender,
+    required: false,
+  })
+  @IsEnum(Gender)
+  @IsOptional()
+  gender?: string;
+
+  @ApiProperty({
+    example: '+1234567890',
+    description: 'Phone number',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  phoneNumber?: string;
 }
