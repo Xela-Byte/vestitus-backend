@@ -1,147 +1,98 @@
-# Vestitus Backend
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
-## About Vestitus
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-Vestitus is a React Native e-commerce mobile application built with **Expo**, running on **iOS, Android, and Web**. The application uses **TypeScript**, **NativeWind** for styling, and **Zustand** for state management. This backend repository provides the API services to power the Vestitus mobile application.
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Architecture Overview
+## Description
 
-This is a **NestJS v11 TypeScript backend** with a modular, decorator-based architecture. The project follows NestJS conventions with modules, controllers, and services for dependency injection and clear separation of concerns. It is designed to serve the Vestitus React Native mobile application across all platforms.
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-- **Framework**: NestJS 11 with Express
-- **Language**: TypeScript 5.7 (strict mode enabled)
-- **Port**: Default 3000 (configurable via `PORT` env var)
-- **Module structure**: `src/app.module.ts` is the root module that imports controllers and providers
-- **Frontend**: Expo-based React Native app (iOS, Android, Web) with TypeScript, NativeWind, and Zustand
-
-## Key Development Commands
-
-**Development & debugging**:
-
-```bash
-yarn dev                    # Watch mode (nest start --watch)
-yarn start:debug           # Debug mode with inspector
-yarn build                 # Compile to dist/
-```
-
-**Testing**:
-
-```bash
-yarn test                  # Unit tests (jest, src/**/*.spec.ts)
-yarn test:watch           # Watch mode
-yarn test:e2e             # Integration tests (test/jest-e2e.json)
-yarn test:cov             # Coverage report
-yarn test:debug           # Debug with node inspector
-```
-
-**Code quality**:
+## Project setup
 
 ```bash
-yarn lint                 # ESLint with --fix
-yarn format              # Prettier format
+$ npm install
 ```
 
-## Project Structure
-
-```
-src/
-  main.ts              # Bootstrap entry (NestFactory.create)
-  app.module.ts        # Root DI module @Module()
-  app.controller.ts    # HTTP handlers @Controller()
-  app.service.ts       # Business logic @Injectable()
-  *.spec.ts            # Unit tests (co-located)
-test/
-  app.e2e-spec.ts      # E2E tests (creates full app)
-  jest-e2e.json        # Separate E2E config
-```
-
-## Critical Patterns & Conventions
-
-### NestJS Dependency Injection
-
-- Use `@Injectable()` on services for DI container
-- Constructor inject dependencies (not property decorators)
-- Modules export providers via `providers` array
-- Controllers depend only on services, not other controllers
-
-**Example from codebase** ([src/app.service.ts](src/app.service.ts) → [src/app.controller.ts](src/app.controller.ts)):
-
-```typescript
-// Service decorated with @Injectable()
-@Injectable()
-export class AppService {
-  getHello(): string {
-    return 'Hello World!';
-  }
-}
-
-// Controller injects via constructor
-@Controller()
-export class AppController {
-  constructor(private readonly appService: AppService) {}
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
-}
-```
-
-### Testing Conventions
-
-- **Unit tests**: Use `@nestjs/testing` `Test.createTestingModule()` to compile modules
-- **E2E tests**: Import root `AppModule`, call `createNestApplication()`, init before each test
-- Co-locate specs with source files (`.spec.ts` next to implementation)
-- Always clean up: `beforeEach` setup, no global state between tests
-
-**Test pattern** ([src/app.controller.spec.ts](src/app.controller.spec.ts)):
-
-```typescript
-const app = await Test.createTestingModule({
-  controllers: [AppController],
-  providers: [AppService],
-}).compile();
-```
-
-### TypeScript Configuration
-
-- **Strict mode enabled**: `strictNullChecks`, `noImplicitAny`, `forceConsistentCasingInFileNames`
-- Decorator metadata required: `experimentalDecorators`, `emitDecoratorMetadata` enabled
-- Output: ES2023 with source maps to `dist/`
-- Incremental compilation enabled for dev speed
-
-## Common Tasks
-
-### Adding a new endpoint
-
-1. Create/update controller in `src/` with `@Controller()` and route decorator (`@Get()`, `@Post()`, etc.)
-2. Inject required services in constructor
-3. Add service method with business logic
-4. Add unit test in `.spec.ts` file using `Test.createTestingModule()`
-5. (Optional) Add E2E test in `test/app.e2e-spec.ts` using `supertest` for HTTP assertions
-
-### Running in production
+## Compile and run the project
 
 ```bash
-yarn build && yarn start:prod  # Compiles to dist/ and runs dist/main.js
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
 ```
 
-## Build & Compilation Details
+## Run tests
 
-- **Hot reload**: Enabled in watch mode via `nest start --watch`
-- **Output**: `dist/main.js` (NestJS CLI manages compilation with ts-loader by default)
-- **Jest config**: Located in `package.json`, rootDir is `src/`, transforms with `ts-jest`
-- **ESLint**: Flat config in `eslint.config.mjs` (v9+), includes Prettier integration
+```bash
+# unit tests
+$ npm run test
 
-## External Dependencies
+# e2e tests
+$ npm run test:e2e
 
-- **@nestjs/core, @nestjs/common, @nestjs/platform-express**: Core NestJS framework
-- **reflect-metadata**: Required for decorator support (imported in bootstrap)
-- **rxjs**: Reactive utilities (included with NestJS)
-- **@types/express, @types/jest, @types/node**: TypeScript definitions
-- **ts-jest, ts-loader**: TypeScript compilation for Jest and Webpack
+# test coverage
+$ npm run test:cov
+```
 
-## Environment
+## Deployment
 
-- **Node version**: Check `.nvmrc` or infer from dev dependencies (v22+ recommended)
-- **Package manager**: yarn (see package.json scripts)
-- **Port configuration**: Via `process.env.PORT ?? 3000` in [src/main.ts](src/main.ts)
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+
+```bash
+$ npm install -g @nestjs/mau
+$ mau deploy
+```
+
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+
+## Resources
+
+Check out a few resources that may come in handy when working with NestJS:
+
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## Stay in touch
+
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
+
+## License
+
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
