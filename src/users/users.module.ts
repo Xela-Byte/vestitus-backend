@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Product, ProductSchema } from 'src/products/entities/product.entity';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { EmailModule } from '../email/email.module';
 import { User, UserSchema } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
@@ -12,6 +13,7 @@ import { UsersService } from './users.service';
       { name: User.name, schema: UserSchema },
       { name: Product.name, schema: ProductSchema },
     ]),
+    EmailModule,
   ],
   controllers: [UsersController],
   providers: [UsersService, RolesGuard],

@@ -9,13 +9,17 @@ import { Model } from 'mongoose';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { PaginatedResult } from 'src/common/interfaces/paginated-result.interface';
 import { paginate } from 'src/common/utils/pagination.helper';
+import { EmailService } from '../email/email.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private emailService: EmailService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     // Check if user already exists
@@ -36,7 +40,20 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    return newUser.save();
+    const savedUser = await newUser.save();
+
+    // Send welcome email (non-blocking)
+    try {
+      await this.emailService.sendWelcomeEmail(
+        savedUser.email,
+        savedUser.fullName,
+      );
+    } catch (error) {
+      // Log error but don't fail user creation
+      console.error('Failed to send welcome email:', error.message);
+    }
+
+    return savedUser;
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
@@ -61,6 +78,10 @@ export class UsersService {
       throw new ConflictException('User not found');
     }
 
+    const oldEmail = existingUser.email;
+    const isEmailChanging =
+      updateUserDto.email && updateUserDto.email !== oldEmail;
+
     // If email is being updated, check for duplicates
     if (updateUserDto.email) {
       const duplicateUser = await this.userModel.findOne({
@@ -73,13 +94,52 @@ export class UsersService {
       }
     }
 
-    return this.userModel
+    const updatedUser = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .select('-password')
       .exec();
+
+    // Send email change notification if email was changed
+    if (isEmailChanging && updateUserDto.email) {
+      try {
+        await this.emailService.sendEmailChangeNotification(
+          oldEmail,
+          updateUserDto.email,
+          existingUser.fullName,
+        );
+      } catch (error) {
+        // Log error but don't fail the update
+        console.error(
+          'Failed to send email change notification:',
+          error.message,
+        );
+      }
+    }
+
+    return updatedUser;
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    const user = await this.userModel.findById(id).exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Send account deletion notification before deleting
+    try {
+      await this.emailService.sendAccountDeletionNotification(
+        user.email,
+        user.fullName,
+      );
+    } catch (error) {
+      // Log error but don't fail the deletion
+      console.error(
+        'Failed to send account deletion notification:',
+        error.message,
+      );
+    }
+
     return this.userModel.findByIdAndDelete(id).exec();
   }
 
@@ -248,5 +308,87 @@ export class UsersService {
     }
 
     return user.favourites;
+  }
+
+  // OAuth-specific methods
+  async createOAuthUser(userData: {
+    email: string;
+    fullName: string;
+    googleId?: string;
+    appleId?: string;
+    profilePicture?: string;
+    authProvider: string;
+  }): Promise<UserDocument> {
+    // Check if user already exists
+    const existingUser = await this.userModel.findOne({
+      email: userData.email,
+    });
+
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // Create new user without password (OAuth user)
+    const newUser = new this.userModel({
+      ...userData,
+    });
+
+    const savedUser = await newUser.save();
+
+    // Send welcome email (non-blocking)
+    try {
+      await this.emailService.sendWelcomeEmail(
+        savedUser.email,
+        savedUser.fullName,
+      );
+    } catch (error) {
+      console.error('Failed to send welcome email:', error.message);
+    }
+
+    return savedUser;
+  }
+
+  async linkGoogleAccount(
+    userId: string,
+    googleId: string,
+    profilePicture?: string,
+  ): Promise<UserDocument> {
+    const updateData: any = { googleId };
+    if (profilePicture) {
+      updateData.profilePicture = profilePicture;
+    }
+
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, updateData, { new: true })
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async linkAppleAccount(
+    userId: string,
+    appleId: string,
+  ): Promise<UserDocument> {
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { appleId }, { new: true })
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async findByGoogleId(googleId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ googleId }).exec();
+  }
+
+  async findByAppleId(appleId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ appleId }).exec();
   }
 }

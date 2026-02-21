@@ -17,11 +17,24 @@ export class User {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   password: string;
 
   @Prop({ default: 'user' })
   role: string;
+
+  // Social Authentication Fields
+  @Prop({ required: false })
+  googleId: string;
+
+  @Prop({ required: false })
+  appleId: string;
+
+  @Prop({ default: 'local' }) // 'local', 'google', 'apple'
+  authProvider: string;
+
+  @Prop({ required: false })
+  profilePicture: string;
 
   @Prop({ type: [String], default: [] })
   passwordHistory: string[];

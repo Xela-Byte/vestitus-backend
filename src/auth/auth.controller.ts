@@ -10,7 +10,13 @@ import {
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
+import { AppleAuthDto } from './dto/apple-auth.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
+import {
+  LinkAppleAccountDto,
+  LinkGoogleAccountDto,
+} from './dto/link-account.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -153,6 +159,138 @@ export class AuthController {
     return this.authService.resetPassword(
       req.user.sub,
       resetPasswordDto.password,
+    );
+  }
+
+  // Google Sign-In with Token Verification
+  @Post('google')
+  @ApiOperation({ summary: 'Sign in with Google (token verification)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully authenticated with Google',
+    schema: {
+      example: {
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: '6996f404375fc77a5f4204bc',
+          email: 'john@example.com',
+          fullName: 'John Doe',
+          role: 'user',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid Google token',
+  })
+  async googleSignIn(@Body() googleAuthDto: GoogleAuthDto) {
+    return this.authService.googleSignIn(googleAuthDto.idToken);
+  }
+
+  // Apple Sign-In with Token Verification
+  @Post('apple')
+  @ApiOperation({ summary: 'Sign in with Apple (token verification)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully authenticated with Apple',
+    schema: {
+      example: {
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: '6996f404375fc77a5f4204bc',
+          email: 'john@example.com',
+          fullName: 'John Doe',
+          role: 'user',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid Apple token',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Email is required from Apple Sign-In',
+  })
+  async appleSignIn(@Body() appleAuthDto: AppleAuthDto) {
+    return this.authService.appleSignIn(
+      appleAuthDto.identityToken,
+      appleAuthDto.user,
+    );
+  }
+
+  // Link Google Account to Existing User
+  @Post('link/google')
+  @ApiOperation({
+    summary: 'Link existing email/password account to Google',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Account successfully linked to Google',
+    schema: {
+      example: {
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: '6996f404375fc77a5f4204bc',
+          email: 'john@example.com',
+          fullName: 'John Doe',
+          role: 'user',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid email or password',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Google account already linked or used by another user',
+  })
+  async linkGoogleAccount(@Body() linkGoogleDto: LinkGoogleAccountDto) {
+    return this.authService.linkGoogleAccount(
+      linkGoogleDto.email,
+      linkGoogleDto.password,
+      linkGoogleDto.idToken,
+    );
+  }
+
+  // Link Apple Account to Existing User
+  @Post('link/apple')
+  @ApiOperation({
+    summary: 'Link existing email/password account to Apple',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Account successfully linked to Apple',
+    schema: {
+      example: {
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: '6996f404375fc77a5f4204bc',
+          email: 'john@example.com',
+          fullName: 'John Doe',
+          role: 'user',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid email or password',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Apple account already linked or used by another user',
+  })
+  async linkAppleAccount(@Body() linkAppleDto: LinkAppleAccountDto) {
+    return this.authService.linkAppleAccount(
+      linkAppleDto.email,
+      linkAppleDto.password,
+      linkAppleDto.identityToken,
+      linkAppleDto.user,
     );
   }
 }
